@@ -31,8 +31,10 @@ app.post('/snippets', (req,res) => {
 })
 
 
-
-
+// GET route to obtain all snippets currently in the data store! 
+app.get('/snippets', (req,res) => {
+    res.json(snippets);
+})
 
 
 
