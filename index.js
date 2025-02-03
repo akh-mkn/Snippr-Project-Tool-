@@ -37,7 +37,17 @@ app.get('/snippets', (req,res) => {
 })
 
 
-
+//GET route to obtain a snippet by its ID!
+app.get('/snippets/:id', (req, res) => {
+    const id = parseInt(req.params.id);
+    const snippet = snippets.find(s => s.id === id);
+  
+    if (!snippet) {
+      return res.status(404).json({ error: 'Snippet not found' });
+    }
+  
+    res.json(snippet);
+  });
 
 
 
