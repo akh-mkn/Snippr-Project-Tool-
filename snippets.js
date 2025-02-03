@@ -1,6 +1,6 @@
 //  in-memory data store (an array or object to hold snippets).
 
-[
+const snippets = [
     {
       "id": 1,
       "language": "Python",
@@ -42,3 +42,6 @@
       "code": "public class Rectangle {\n    private int width;\n    private int height;\n\n    public Rectangle(int width, int height) {\n        this.width = width;\n        this.height = height;\n    }\n\n    public int getArea() {\n        return width * height;\n    }\n}"
     }
   ]
+
+
+  module.exports = snippets
