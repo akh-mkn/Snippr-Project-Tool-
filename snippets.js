@@ -1,0 +1,1 @@
+//  in-memory data store (an array or object to hold snippets).

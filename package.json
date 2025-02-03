@@ -1,0 +1,15 @@
+{
+  "name": "snippr-project-tool-",
+  "version": "1.0.0",
+  "description": "Welcome to Snippr. This is a project which requires me to develop a MVP as per instructions, for my apprenticeship.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.21.2"
+  }
+}
