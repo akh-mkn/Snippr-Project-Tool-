@@ -3,6 +3,8 @@ const app = express();
 const snippets = require('./snippets');
 const crypto = require('crypto');
 require('dotenv').config();
+const bcrypt = require('bcrypt');
+
 
 // Encryption setup
 const algorithm = 'aes-256-cbc';
@@ -97,6 +99,31 @@ app.get('/snippets/:id', (req, res) => {
     code: decrypt(snippet.code) || 'Failed to decrypt code',
   });
 });
+
+
+//user registration route 
+const users = []; // Temporary in-memory store
+
+app.post('/users', async (req, res) => {
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+        return res.status(400).json({ error: 'Email and password are required!' });
+    }
+
+    const saltRounds = 10;
+    const hashedPassword = await bcrypt.hash(password, saltRounds); // Hash password
+
+    const newUser = { email, password: hashedPassword };
+    users.push(newUser);
+
+    res.status(201).json({ message: 'User registered successfully!' });
+});
+
+
+
+
+
 
 // Server setup
 const PORT = process.env.PORT || 3000;
