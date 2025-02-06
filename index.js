@@ -4,12 +4,20 @@ const snippets = require('./snippets');
 const crypto = require('crypto');
 require('dotenv').config();
 const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
 
 
 // Encryption setup
 const algorithm = 'aes-256-cbc';
 const SECRET_KEY = process.env.SECRET_KEY; 
 const IV_LENGTH = 16; // IV length for AES-256-CBC
+
+
+// JSON Web token setup 
+const JWT_SECRET = process.env.JWT_SECRET;
+if (!JWT_SECRET) {
+  throw new Error('JWT_SECRET is not defined in .env!');
+}
 
 // Validate SECRET_KEY
 if (!SECRET_KEY) {
@@ -54,6 +62,27 @@ function encrypt(text) {
     }
   }
 
+
+  //middleware function which verifies tokens 
+  function authenticateToken(req, res, next) {
+    const authHeader = req.headers.authorization;
+    if (!authHeader) {
+        return res.status(401).json({ error: 'Access denied. No token provided.' });
+    }
+
+    const token = authHeader.split(' ')[1]; // Bearer <token>
+    jwt.verify(token, JWT_SECRET, (err, user) => {
+        if (err) {
+            return res.status(403).json({ error: 'Invalid or expired token' });
+        }
+        req.user = user;
+        next();
+    });
+}
+
+
+
+
 // POST route
 app.post('/snippets', (req, res) => {
   const { language, code } = req.body;
@@ -78,25 +107,25 @@ app.post('/snippets', (req, res) => {
 });
 
 // GET routes 
-app.get('/snippets', (req, res) => {
+app.get('/snippets', authenticateToken, (req, res) => {
   const decryptedSnippets = snippets.map(s => ({
-    ...s,
-    code: decrypt(s.code) || 'Failed to decrypt code',
+      ...s,
+      code: decrypt(s.code) || 'Failed to decrypt code',
   }));
   res.json(decryptedSnippets);
 });
 
-app.get('/snippets/:id', (req, res) => {
+app.get('/snippets/:id', authenticateToken, (req, res) => {
   const id = parseInt(req.params.id);
   const snippet = snippets.find(s => s.id === id);
 
   if (!snippet) {
-    return res.status(404).json({ error: 'Snippet not found' });
+      return res.status(404).json({ error: 'Snippet not found' });
   }
 
   res.json({
-    ...snippet,
-    code: decrypt(snippet.code) || 'Failed to decrypt code',
+      ...snippet,
+      code: decrypt(snippet.code) || 'Failed to decrypt code',
   });
 });
 
@@ -120,6 +149,25 @@ app.post('/users', async (req, res) => {
     res.status(201).json({ message: 'User registered successfully!' });
 });
 
+
+//user login route
+app.post('/login', async (req, res) => {
+  const { email, password } = req.body;
+
+  const user = users.find(u => u.email === email);
+  if (!user) {
+      return res.status(401).json({ error: 'Invalid email or password' });
+  }
+
+  const isMatch = await bcrypt.compare(password, user.password);
+  if (!isMatch) {
+      return res.status(401).json({ error: 'Invalid email or password' });
+  }
+
+  const token = jwt.sign({ email: user.email }, JWT_SECRET, { expiresIn: '24h' });
+
+  res.json({ message: 'Login successful!', token });
+});
 
 
 
